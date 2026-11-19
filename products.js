@@ -1,27 +1,71 @@
-// ===== المنتجات: عدّلي الأسماء والأسعار والألوان والمقاسات هنا =====
-const SIZES = ['37','38','39','40','41'];
-const COLORS = {'بيج':'#e8d6a8','أسود':'#1f1f1f','عنابي':'#7a1f3d','بني':'#8b5a2b','رمادي':'#9a9590','أبيض':'#ffffff','وردي':'#f3b6c9','ذهبي':'#d9b25e'};
+/* ===== الألوان (اسم اللون: الكود) ===== */
+const COLORS = {
+  'بيج': '#d8c3a5',
+  'عسلي': '#b57a45',
+  'بني': '#6b4128',
+  'كريمي': '#f1e8d3',
+  'أسود': '#1d1a19',
+  'أزرق': '#4d6585',
+  'وردي': '#efdcd3'
+};
 
+/* ===== الأسعار: حطي السعر بالجنيه جنب كل موديل ===== */
+const PRICE = {
+  crossbody: 0, // كروس بودي
+  tote: 0,      // توت مطبوعة
+  heel: 0       // صندل كعب
+};
+
+/* ===== المنتجات: كل موديل مع ألوانه وصوره ===== */
 const PRODUCTS = [
-  { id:'bow-heel', ar:'كعب الفيونكة', name:'Bow Heel', cat:'shoes', price:690, emoji:'👠', colors:['أسود','عنابي','بيج'], sizes:SIZES },
-  { id:'pearl-flats', ar:'باليرينا اللؤلؤ', name:'Pearl Flats', cat:'shoes', price:459, emoji:'🥿', colors:['بيج','أسود'], sizes:SIZES },
-  { id:'cloud-sneakers', ar:'سنيكرز السحابة', name:'Cloud Sneakers', cat:'shoes', price:820, emoji:'👟', colors:['أبيض','رمادي'], sizes:SIZES },
-  { id:'cozy-boots', ar:'بوت دافي', name:'Cozy Boots', cat:'shoes', price:999, emoji:'👢', colors:['بني','أسود'], sizes:SIZES },
-  { id:'mini-tote', ar:'شنطة إيد صغيرة', name:'Mini Tote', cat:'bags', price:750, emoji:'👜', colors:['بيج','أسود','عنابي'], sizes:null },
-  { id:'crossbody', ar:'كروس بودي', name:'Crossbody', cat:'bags', price:580, emoji:'👛', colors:['رمادي','بني'], sizes:null },
-  { id:'bow-clutch', ar:'كلاتش الفيونكة', name:'Bow Clutch', cat:'bags', price:420, emoji:'👝', colors:['ذهبي','وردي'], sizes:null }
+  {
+    id: 'crossbody',
+    cat: 'bags',
+    ar: 'كروس بودي',
+    name: 'Crossbody',
+    price: PRICE.crossbody,
+    emoji: '👜',
+    soldOut: false,
+    out: [],
+    colors: ['بيج', 'عسلي', 'بني', 'كريمي', 'أسود'],
+    photos: {
+      'بيج': 'crossbody-beige.jpg',
+      'عسلي': 'crossbody-tan.jpg',
+      'بني': 'crossbody-brown.jpg',
+      'كريمي': 'crossbody-cream.jpg',
+      'أسود': 'crossbody-black.jpg'
+    }
+  },
+  {
+    id: 'tote',
+    cat: 'bags',
+    ar: 'توت مطبوعة',
+    name: 'Printed Tote',
+    price: PRICE.tote,
+    emoji: '👜',
+    soldOut: false,
+    out: [],
+    colors: ['أزرق', 'أسود', 'وردي'],
+    photos: {
+      'أزرق': 'tote-blue.jpg',
+      'أسود': 'tote-black.jpg',
+      'وردي': 'tote-pink.jpg'
+    }
+  },
+  {
+    id: 'heel',
+    cat: 'shoes',
+    ar: 'صندل كعب',
+    name: 'Slingback Heel',
+    price: PRICE.heel,
+    emoji: '👠',
+    sizes: [37, 38, 39, 40, 41],
+    soldOut: false,
+    out: [],
+    colors: ['بيج', 'أسود'],
+    photos: {
+      'بيج': 'heel-beige.jpg',
+      'أسود': 'heel-black.jpg'
+    }
+  }
 ];
-
-PRODUCTS.forEach(p => { p.out = []; p.soldOut = false; });
-// أسعار قبل الخصم (بتتشطب في الكارت). امسحي السطر ده لو مفيش خصم
-const OLD = { 'cozy-boots': 1199 };
-PRODUCTS.forEach(p => { p.old = OLD[p.id] || 0; });
-
-// بيحط حالة المخزون اللي جاية من قاعدة البيانات على المنتجات
-function applyStock(rows){
-  PRODUCTS.forEach(p => { p.out = []; p.soldOut = false; });
-  rows.forEach(r => {
-    const p = PRODUCTS.find(x => x.id === r.product_id);
-    if (p){ p.soldOut = !!r.sold_out; p.out = Array.isArray(r.out_sizes) ? r.out_sizes : []; }
-  });
-}
