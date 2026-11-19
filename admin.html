@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>إدارة المخزون</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f8f4ec;--card:#fffdf8;--ink:#2f2f2f;--muted:#6f6a60;--gold:#c9a54e;--line:#d6c499;--red:#c0392b}
+*{box-sizing:border-box}
+body{margin:0;padding:16px;background:var(--bg);color:var(--ink);font:400 16px/1.6 "Cairo",system-ui,sans-serif}
+.box{max-width:640px;margin:24px auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+h1{font-size:1.5rem;margin:0 0 4px}
+.muted{color:var(--muted);font-size:.92rem;margin:0 0 14px}
+.hidden{display:none!important}
+label{display:block;font-size:.95rem;color:var(--muted);margin:10px 0 4px}
+input{width:100%;font:inherit;font-size:1rem;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+button{font:inherit;font-weight:700;padding:9px 14px;border:1px solid var(--gold);border-radius:10px;background:transparent;color:var(--ink);cursor:pointer}
+button.primary{background:var(--gold);color:#2f2f2f}
+.full{width:100%;margin-top:14px;padding:12px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.prod{padding:12px 0;border-bottom:1px dashed var(--line)}
+.prod-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.pname{color:var(--muted);font-size:.9rem;margin-inline-start:6px}
+.sizes{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.size{min-width:44px;height:38px;padding:0 8px;font-size:.95rem}
+.size.out{text-decoration:line-through;color:var(--red);border-color:var(--red)}
+.msg{min-height:1.5em;font-size:.92rem;color:var(--muted);margin-top:12px}
+.msg.err{color:var(--red)}
+</style>
+</head>
+<body>
+<div class="box">
+  <section id="login" class="hidden">
+    <h1>دخول صاحبة المحل</h1>
+    <p class="muted">ادخلي بالإيميل والباسورد اللي اتعملوا لحسابك.</p>
+    <form id="login-form">
+      <label for="email">الإيميل</label>
+      <input id="email" type="email" required autocomplete="username">
+      <label for="password">الباسورد</label>
+      <input id="password" type="password" required autocomplete="current-password">
+      <button class="primary full" type="submit">دخول</button>
+    </form>
+  </section>
+
+  <section id="app" class="hidden">
+    <div class="top">
+      <div>
+        <h1>المخزون</h1>
+        <p class="muted">اضغطي "علّمي خلص" لو المنتج خلص، أو على المقاس اللي خلص. التغيير بيظهر للزبونات على طول.</p>
+      </div>
+      <button id="logout" type="button">خروج</button>
+    </div>
+    <div id="list"></div>
+  </section>
+
+  <div class="msg" id="msg" role="status" aria-live="polite"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="products.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const configured = !SUPABASE_URL.includes('YOUR-PROJECT') && !SUPABASE_KEY.includes('YOUR-ANON');
+const sb = (configured && window.supabase) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+let state = {};
+
+function setMsg(text, err = false){
+  const m = $('#msg');
+  m.textContent = text;
+  m.className = 'msg' + (err ? ' err' : '');
+}
+function show(which){
+  $('#login').classList.toggle('hidden', which !== 'login');
+  $('#app').classList.toggle('hidden', which !== 'app');
+}
+function getState(id){
+  return state[id] || (state[id] = { sold_out: false, out_sizes: [] });
+}
+
+function render(){
+  $('#list').innerHTML = PRODUCTS.map(p => {
+    const s = getState(p.id);
+    const sizes = p.sizes ? `<div class="sizes">${p.sizes.map(z =>
+      `<button class="size ${s.out_sizes.includes(z) ? 'out' : ''}" data-size="${p.id}|${z}">${z}</button>`
+    ).join('')}</div>` : '';
+    return `<div class="prod">
+      <div class="prod-head">
+        <div><strong>${p.ar}</strong><span class="pname">${p.name}</span></div>
+        <button class="${s.sold_out ? 'primary' : ''}" data-sold="${p.id}">${s.sold_out ? 'رجّعيه متاح' : 'علّمي خلص'}</button>
+      </div>
+      ${sizes}
+    </div>`;
+  }).join('');
+}
+
+async function loadStock(){
+  const { data, error } = await sb.from('stock').select('product_id, sold_out, out_sizes');
+  if (error) throw error;
+  state = {};
+  (data || []).forEach(r => {
+    state[r.product_id] = { sold_out: !!r.sold_out, out_sizes: r.out_sizes || [] };
+  });
+}
+
+async function enterApp(){
+  show('app');
+  setMsg('جاري تحميل المخزون...');
+  try {
+    await loadStock();
+    render();
+    setMsg('');
+  } catch (e) {
+    setMsg('ما قدرتش أحمّل المخزون. اتأكدي من بيانات config.js ومن إن ملف setup.sql اتشغّل', true);
+  }
+}
+
+async function save(id){
+  render();
+  setMsg('جاري الحفظ...');
+  const s = getState(id);
+  const { error } = await sb.from('stock').upsert(
+    { product_id: id, sold_out: s.sold_out, out_sizes: s.out_sizes },
+    { onConflict: 'product_id' }
+  );
+  if (error) {
+    setMsg('ما اتحفظش التغيير، جربي تاني', true);
+    await enterApp();
+    return;
+  }
+  setMsg('اتحفظ ✓');
+}
+
+$('#list').addEventListener('click', e => {
+  const soldBtn = e.target.closest('[data-sold]');
+  const sizeBtn = e.target.closest('[data-size]');
+  if (soldBtn){
+    const id = soldBtn.dataset.sold;
+    const s = getState(id);
+    s.sold_out = !s.sold_out;
+    save(id);
+  }
+  if (sizeBtn){
+    const [id, z] = sizeBtn.dataset.size.split('|');
+    const s = getState(id);
+    s.out_sizes = s.out_sizes.includes(z) ? s.out_sizes.filter(x => x !== z) : [...s.out_sizes, z];
+    save(id);
+  }
+});
+
+$('#login-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!sb) return setMsg('مكتبة الاتصال مش متحمّلة، اتأكدي من النت أو من ملف config.js', true);
+  setMsg('جاري الدخول...');
+  const { error } = await sb.auth.signInWithPassword({
+    email: $('#email').value.trim(),
+    password: $('#password').value
+  });
+  $('#password').value = '';
+  if (error) return setMsg('الإيميل أو الباسورد مش صح', true);
+  enterApp();
+});
+
+$('#logout').onclick = async () => {
+  if (sb) await sb.auth.signOut();
+  show('login');
+  setMsg('');
+};
+
+(async () => {
+  if (!configured) { show('login'); return setMsg('لازم تحطي بيانات Supabase في ملف config.js الأول', true); }
+  if (!sb) { show('login'); return setMsg('ما قدرتش أحمّل مكتبة الاتصال، اتأكدي من النت', true); }
+  const { data } = await sb.auth.getSession();
+  if (data && data.session) enterApp();
+  else show('login');
+})();
+</script>
+</body>
+</html>
