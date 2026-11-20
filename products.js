@@ -6,14 +6,22 @@ const COLORS = {
   'كريمي': '#f1e8d3',
   'أسود': '#1d1a19',
   'أزرق': '#4d6585',
-  'وردي': '#efdcd3'
+  'عنابي': '#6e1f2a',
+  'وردي': '#efdcd3',
+  'أحمر': '#b3262e',
+  'ذهبي': '#c9a85c',
+  'فضي': '#c0c0c6'
 };
 
 /* ===== الأسعار: حطي السعر بالجنيه جنب كل موديل ===== */
 const PRICE = {
-  crossbody: 0, // كروس بودي
-  tote: 0,      // توت مطبوعة
-  heel: 0       // صندل كعب
+  crossbody: 590, // كروس بودي
+  tote: 0,      // Secret Bag
+  heel: 740,    // صندل كعب
+  belt: 0,      // Belt Tote
+  backpack: 750, // Backpack
+  quilted: 0,    // Quilted Bag
+  slipon: 0      // Slip-On Flat
 };
 
 /* ===== المنتجات: كل موديل مع ألوانه وصوره ===== */
@@ -39,8 +47,8 @@ const PRODUCTS = [
   {
     id: 'tote',
     cat: 'bags',
-    ar: 'توت مطبوعة',
-    name: 'Printed Tote',
+    ar: 'Secret Bag',
+    name: 'Secret Bag',
     price: PRICE.tote,
     emoji: '👜',
     soldOut: false,
@@ -54,18 +62,83 @@ const PRODUCTS = [
   },
   {
     id: 'heel',
-    cat: 'shoes',
+    cat: 'heels',
     ar: 'صندل كعب',
     name: 'Slingback Heel',
     price: PRICE.heel,
     emoji: '👠',
+    heel: true,
     sizes: [37, 38, 39, 40, 41],
     soldOut: false,
     out: [],
-    colors: ['بيج', 'أسود'],
+    colors: ['بيج', 'أسود', 'عنابي'],
     photos: {
       'بيج': 'heel-beige.jpg',
-      'أسود': 'heel-black.jpg'
+      'أسود': 'heel-black.jpg',
+      'عنابي': 'heel-burgundy.jpg'
+    }
+  },
+  {
+    id: 'belt-tote',
+    cat: 'bags',
+    ar: 'Belt Tote',
+    name: 'Belt Tote',
+    price: PRICE.belt,
+    emoji: '👜',
+    soldOut: false,
+    out: [],
+    colors: ['بني', 'عنابي'],
+    photos: {
+      'بني': 'belt-tote-brown.jpg',
+      'عنابي': 'belt-tote-burgundy.jpg'
+    }
+  },
+  {
+    id: 'backpack',
+    cat: 'bags',
+    ar: 'Backpack',
+    name: 'Backpack',
+    price: PRICE.backpack,
+    emoji: '🎒',
+    soldOut: false,
+    out: [],
+    colors: ['بيج', 'أسود', 'عسلي', 'أحمر'],
+    photos: {
+      'بيج': 'backpack-beige.jpg',
+      'أسود': 'backpack-black.jpg',
+      'عسلي': 'backpack-camel.jpg',
+      'أحمر': 'backpack-red.jpg'
+    }
+  },
+  {
+    id: 'quilted',
+    cat: 'bags',
+    ar: 'Quilted Bag',
+    name: 'Quilted Bag',
+    price: PRICE.quilted,
+    emoji: '👜',
+    soldOut: false,
+    out: [],
+    colors: ['بني'],
+    photos: {
+      'بني': 'quilted-brown.jpg'
+    }
+  },
+  {
+    id: 'slipon',
+    cat: 'shoes',
+    ar: 'سليب أون',
+    name: 'Slip-On Flat',
+    price: PRICE.slipon,
+    emoji: '🥿',
+    sizes: [37, 38, 39, 40, 41],
+    soldOut: false,
+    out: [],
+    colors: ['ذهبي', 'أسود', 'فضي'],
+    photos: {
+      'ذهبي': 'slipon-group.jpg',
+      'أسود': 'slipon-group.jpg',
+      'فضي': 'slipon-group.jpg'
     }
   }
 ];
